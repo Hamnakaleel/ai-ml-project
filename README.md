@@ -1,2 +1,30 @@
 # ai-ml-project
 Fish Disease Detection System using Image Classification.
+
+# 🐟 Fish Disease Detection System
+
+An AI/ML project for detecting fish diseases using Image Classification.
+
+## 📁 Dataset
+The fish dataset is hosted on Google Drive (too large for GitHub):
+👉 [Download Fish Dataset](https://drive.google.com/drive/folders/1BqFnQXCrqRnFgU13XqSdJDkSo8vcnIib?usp=sharing)
+
+## 🛠️ Technologies Used
+- Python
+- TensorFlow / Keras
+- Jupyter Notebook
+- Image Classification (CNN)
+
+## 👥 Team Members
+- Hamnakaleel
+- Hasna
+- Haseena
+- Halik
+- Ilham
+- Ijas
+
+## 🚀 How to Run
+1. Download the dataset from the link above
+2. Extract the zip file into the project folder
+3. Open the Jupyter Notebook
+4. Run all cells
