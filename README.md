@@ -7,7 +7,7 @@ An AI/ML project for detecting fish diseases using Image Classification.
 
 ## 📁 Dataset
 The fish dataset is hosted on Google Drive (too large for GitHub):
-👉 [Download Fish Dataset](https://drive.google.com/drive/folders/1BqFnQXCrqRnFgU13XqSdJDkSo8vcnIib?usp=sharing)
+👉 [Download Fish Dataset](https://icstechnologycampus-my.sharepoint.com/:f:/g/personal/03241052_icst_edu_lk/IgCAcSXq5PzFQIu-daNjh_BWASrTjbcg3BO37ztjtas74So?e=txoFVk)
 
 ## 🛠️ Technologies Used
 - Python
