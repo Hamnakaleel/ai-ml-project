@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Disease Detection</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f8ff; }
+        .header { background: #0077b6; color: white; padding: 20px; text-align: center; }
+        .header h1 { font-size: 28px; }
+        .header p { font-size: 14px; margin-top: 5px; }
+        .container { max-width: 700px; margin: 30px auto; padding: 20px; }
+        .upload-box { background: white; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .upload-box h2 { color: #0077b6; margin-bottom: 15px; }
+        .upload-area { border: 2px dashed #0077b6; border-radius: 10px; padding: 30px; margin: 20px 0; cursor: pointer; }
+        .upload-area p { color: #666; }
+        input[type="file"] { display: none; }
+        .preview-img { max-width: 200px; max-height: 200px; border-radius: 10px; margin: 10px auto; display: none; }
+        .btn { background: #0077b6; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn:hover { background: #005f8a; }
+        .result-box { background: white; border-radius: 15px; padding: 25px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: none; }
+        .disease-name { font-size: 22px; font-weight: bold; color: #d62828; margin-bottom: 10px; }
+        .healthy { color: #2d6a4f !important; }
+        .confidence { background: #e8f4fd; padding: 8px 15px; border-radius: 20px; display: inline-block; margin-bottom: 15px; color: #0077b6; font-weight: bold; }
+        .info-card { background: #f8f9fa; border-left: 4px solid #0077b6; padding: 12px 15px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+        .info-card h4 { color: #0077b6; margin-bottom: 5px; }
+        .info-card p { color: #444; font-size: 14px; }
+        .loading { display: none; text-align: center; padding: 20px; color: #0077b6; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🐟 Fish Disease Detection System</h1>
+    <p>Upload a fish image to detect disease and get treatment advice</p>
+</div>
+
+<div class="container">
+    <div class="upload-box">
+        <h2>Upload Fish Image</h2>
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <p>📁 Click here to upload fish image</p>
+            <p style="font-size:12px; margin-top:5px;">Supports JPG, PNG, JPEG</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+        <img id="preview" class="preview-img">
+        <br>
+        <button class="btn" onclick="predictDisease()">🔍 Detect Disease</button>
+    </div>
+
+    <div class="loading" id="loading">
+        <p>🔄 Analyzing fish image... please wait</p>
+    </div>
+
+    <div class="result-box" id="resultBox">
+        <div class="disease-name" id="diseaseName"></div>
+        <div class="confidence" id="confidenceScore"></div>
+        <div class="info-card">
+            <h4>🦠 Cause</h4>
+            <p id="causeText"></p>
+        </div>
+        <div class="info-card">
+            <h4>💊 Treatment</h4>
+            <p id="treatmentText"></p>
+        </div>
+        <div class="info-card">
+            <h4>✅ Solution</h4>
+            <p id="solutionText"></p>
+        </div>
+    </div>
+</div>
+
+<p style="text-align:center; color:#888; font-size:12px; margin-top:10px;">
+⚠️ This result is for guidance only. Please consult a fish expert before treatment.
+</p>
+<script>
+    function previewImage(event) {
+        const preview = document.getElementById('preview');
+        preview.src = URL.createObjectURL(event.target.files[0]);
+        preview.style.display = 'block';
+    }
+
+    function predictDisease() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files[0]) {
+            alert('Please upload a fish image first!');
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('resultBox').style.display = 'none';
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        fetch('/predict', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            document.getElementById('resultBox').style.display = 'block';
+            const nameEl = document.getElementById('diseaseName');
+            nameEl.textContent = '🐟 ' + data.disease;
+            nameEl.className = 'disease-name' + (data.disease === 'Healthy Fish' ? ' healthy' : '');
+            document.getElementById('confidenceScore').textContent = 'Confidence: ' + data.confidence + '%';
+            document.getElementById('causeText').textContent = data.cause;
+            document.getElementById('treatmentText').textContent = data.treatment;
+            document.getElementById('solutionText').textContent = data.solution;
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = 'none';
+            alert('Something went wrong! Please try again.');
+        });
+    }
+</script>
+
+</body>
+</html>
