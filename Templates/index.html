@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Disease Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f8ff; }
+        .header { background: #0077b6; color: white; padding: 20px; text-align: center; }
+        .header h1 { font-size: 28px; }
+        .header p { font-size: 14px; margin-top: 5px; }
+        .container { max-width: 700px; margin: 30px auto; padding: 20px; }
+        .upload-box { background: white; border-radius: 15px; padding: 30px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .upload-box h2 { color: #0077b6; margin-bottom: 15px; }
+        .upload-area { border: 2px dashed #0077b6; border-radius: 10px; padding: 30px; margin: 20px 0; cursor: pointer; }
+        .upload-area p { color: #666; }
+        input[type="file"] { display: none; }
+        .preview-img { max-width: 200px; max-height: 200px; border-radius: 10px; margin: 10px auto; display: none; }
+        .btn { background: #0077b6; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn:hover { background: #005f8a; }
+        .result-box { background: white; border-radius: 15px; padding: 25px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: none; }
+        .disease-name { font-size: 22px; font-weight: bold; color: #d62828; margin-bottom: 10px; }
+        .healthy { color: #2d6a4f !important; }
+        .confidence { background: #e8f4fd; padding: 8px 15px; border-radius: 20px; display: inline-block; margin-bottom: 15px; color: #0077b6; font-weight: bold; }
+        .info-card { background: #f8f9fa; border-left: 4px solid #0077b6; padding: 12px 15px; margin: 10px 0; border-radius: 0 8px 8px 0; }
+        .info-card h4 { color: #0077b6; margin-bottom: 5px; }
+        .info-card p { color: #444; font-size: 14px; }
+        .loading { display: none; text-align: center; padding: 20px; color: #0077b6; }
+        
+        /* Markdown Styling */
+        .markdown-content { font-size: 14px; line-height: 1.6; color: #333; }
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 { color: #0077b6; margin: 15px 0 10px 0; font-weight: 600; }
+        .markdown-content h1 { font-size: 20px; border-bottom: 2px solid #0077b6; padding-bottom: 8px; }
+        .markdown-content h2 { font-size: 18px; }
+        .markdown-content h3 { font-size: 16px; }
+        .markdown-content h4 { font-size: 15px; color: #0077b6; }
+        .markdown-content p { margin: 10px 0; }
+        .markdown-content ul, .markdown-content ol { margin: 10px 0 10px 20px; }
+        .markdown-content li { margin: 5px 0; }
+        .markdown-content strong { color: #d62828; font-weight: 600; }
+        .markdown-content em { color: #0077b6; font-style: italic; }
+        .markdown-content code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; color: #c7254e; }
+        .markdown-content pre { background: #2d3436; color: #fff; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+        .markdown-content pre code { background: none; color: #fff; padding: 0; }
+        .markdown-content blockquote { border-left: 4px solid #0077b6; padding-left: 15px; margin: 10px 0; color: #555; background: #f9f9f9; padding: 10px 15px; border-radius: 4px; }
+        .markdown-content a { color: #0077b6; text-decoration: none; }
+        .markdown-content a:hover { text-decoration: underline; }
+        .markdown-content hr { border: none; border-top: 2px solid #e0e0e0; margin: 15px 0; }
+        .markdown-content table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .markdown-content th { background: #0077b6; color: white; padding: 10px; text-align: left; }
+        .markdown-content td { padding: 10px; border-bottom: 1px solid #ddd; }
+        .markdown-content tr:hover { background: #f9f9f9; }
+        
+        /* Language Dropdown */
+        .language-selector { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            padding: 0 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        .language-selector select {
+            border: none;
+            background: none;
+            padding: 5px;
+            font-size: 13px;
+            color: #0077b6;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+        }
+        .language-selector select:hover { color: #005f8a; }
+        .language-selector label { margin: 0; font-weight: 600; color: #0077b6; }
+        
+        /* About Us Section */
+        .about-section { background: linear-gradient(135deg, #e8f4fd 0%, #fff5f5 100%); border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0, 119, 182, 0.1); border-left: 5px solid #0077b6; }
+        .about-section h2 { color: #0077b6; font-size: 24px; margin-bottom: 15px; }
+        .about-section p { color: #444; line-height: 1.8; font-size: 15px; margin: 10px 0; }
+        .about-section strong { color: #d62828; }
+        
+        /* Footer Section */
+        .footer { background: #0077b6; color: white; padding: 40px 20px; margin-top: 50px; }
+        .footer-container { max-width: 900px; margin: 0 auto; }
+        .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-bottom: 30px; }
+        .footer-section h3 { font-size: 18px; margin-bottom: 15px; color: #fff; }
+        .footer-section p { font-size: 14px; line-height: 1.8; color: #e8f4fd; }
+        .footer-section a { color: #ffd700; text-decoration: none; }
+        .footer-section a:hover { text-decoration: underline; }
+        .footer-contact { display: flex; align-items: center; margin-bottom: 10px; }
+        .footer-contact-icon { margin-right: 12px; font-size: 18px; }
+        .social-links { display: flex; gap: 15px; margin-top: 15px; }
+        .social-links a { display: inline-block; width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; text-align: center; line-height: 40px; font-size: 18px; transition: background 0.3s; }
+        .social-links a:hover { background: #ffd700; }
+        .footer-divider { border-top: 1px solid rgba(255, 255, 255, 0.2); padding-top: 20px; text-align: center; font-size: 14px; color: #e8f4fd; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🐟 Fish Disease Detection System</h1>
+    <p>Upload a fish image to detect disease and get treatment advice</p>
+</div>
+
+<div class="container">
+    <div id="about" class="section about-section">
+        <h2>ℹ️ About Us</h2>
+        <p>Welcome to the <strong>Fish Disease Detection System!</strong> 🐟</p>
+        
+        <p>This system uses <strong>Artificial Intelligence</strong> to help you detect fish diseases instantly. Simply upload a photo of your fish and our AI will analyse it and tell you what disease your fish has along with the treatment and prevention methods.</p>
+        
+        <class="t with our Fish Disease Assistant</strong> for any fish related questions and download a detailed report of the detection results.</p>
+        
+        <p><strong>Our goal</strong> is to help fish farmers identify diseases early and take the right action to protect their fish. 🌊</p>
+    </div>
+
+    <div>
+        <div class="upload-box">
+        <h2>Upload Fish Image</h2>
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <p>📁 Click here to upload fish image</p>
+            <p style="font-size:12px; margin-top:5px;">Supports JPG, PNG, JPEG</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+        <img id="preview" class="preview-img">
+        <br>
+        <button class="btn" onclick="predictDisease()">🔍 Detect Disease</button>
+    </div>
+
+    <div class="loading" id="loading">
+        <p>🔄 Analyzing fish image... please wait</p>
+    </div>
+
+        <div class="result-box" id="resultBox">
+            <div class="disease-name" id="diseaseName"></div>
+            <div class="confidence" id="confidenceScore"></div>
+            <div class="info-card">
+                <h4>🦠 Cause</h4>
+                <p id="causeText"></p>
+            </div>
+            <div class="info-card">
+                <h4>💊 Treatment</h4>
+                <p id="treatmentText"></p>
+            </div>
+            <div class="info-card">
+                <h4>✅ Solution</h4>
+                <p id="solutionText"></p>
+            </div>
+            <div class="info-card">
+                <h4>🔍 Symptoms</h4>
+                <p id="symptomsText"></p>
+            </div>
+            <div class="info-card">
+                <h4>🛡️ Prevention</h4>
+                <p id="preventionText"></p>
+            </div>
+            <div class="info-card">
+                <h4>🫀 Organ Affected</h4>
+                <p id="organText"></p>
+            </div>
+            <br>
+            <button class="btn" onclick="generateReport()" id="reportBtn" style="display: inline-block; background: rgb(40, 167, 69);">📄 Generate PDF Report</button>
+        </div>
+    </div>
+</div>
+
+<p style="text-align:center; color:#888; font-size:12px; margin-top:10px;">
+⚠️ This result is for guidance only. Please consult a fish expert before treatment.
+</p>
+
+
+
+<div style="max-width:700px; margin:20px auto; padding:20px;">
+  <div style="background:white; border-radius:15px; padding:25px; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+    <h2 style="color:#0077b6; margin-bottom:15px;">🤖 Fish Disease Assistant</h2>
+    <div id="chatbox" style="height:300px; overflow-y:auto; border:1px solid #ddd; border-radius:10px; padding:15px; margin-bottom:15px; background:#f8f9fa;"></div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <input type="text" id="chatInput" placeholder="Ask about fish diseases..." 
+        style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+      <div class="language-selector">
+        <label for="languageSelect">🌐</label>
+        <select id="languageSelect" onchange="changeLanguage(this.value)">
+          <option value="english">🇬🇧 English</option>
+          <option value="tamil">🇮🇳 Tamil (தமிழ்)</option>
+          <option value="sinhala">🇱🇰 Sinhala (සිංහල)</option>
+          <option value="hindi">🇮🇳 Hindi (हिन्दी)</option>
+        </select>
+      </div>
+      <button onclick="sendMessage()" 
+        style="background:#0077b6; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">Send</button>
+    </div>
+  </div>
+</div> 
+
+<script>
+    function previewImage(event) {
+        const preview = document.getElementById('preview');
+        preview.src = URL.createObjectURL(event.target.files[0]);
+        preview.style.display = 'block';
+    }
+
+    function predictDisease() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files[0]) {
+            alert('Please upload a fish image first!');
+            return;
+        }
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('resultBox').style.display = 'none';
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        fetch('/predict', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            document.getElementById('resultBox').style.display = 'block';
+            const nameEl = document.getElementById('diseaseName');
+            nameEl.textContent = '🐟 ' + data.disease;
+            nameEl.className = 'disease-name' + (data.disease === 'Healthy Fish' ? ' healthy' : '');
+            document.getElementById('confidenceScore').textContent = 'Confidence: ' + data.confidence + '%';
+            document.getElementById('causeText').textContent = data.cause;
+            document.getElementById('treatmentText').textContent = data.treatment;
+            document.getElementById('solutionText').textContent = data.solution;
+            document.getElementById('symptomsText').textContent = data.symptoms;
+            document.getElementById('preventionText').textContent = data.prevention;
+            document.getElementById('organText').textContent = data.organ; 
+            document.getElementById('reportBtn').style.display = 'inline-block';
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = 'none';
+            alert('Something went wrong! Please try again.');
+        });
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const chatbox = document.getElementById('chatbox');
+        const message = input.value.trim();
+        const language = document.getElementById('languageSelect').value || 'english';
+        
+        if (!message) return;
+        
+        // Display user message
+        chatbox.innerHTML += `<div style="text-align:right; margin:12px 0;">
+            <span style="background:#0077b6; color:white; padding:10px 15px; border-radius:10px; display:inline-block; max-width:80%; word-wrap:break-word;">${escapeHtml(message)}</span>
+        </div>`;
+        
+        input.value = '';
+        chatbox.scrollTop = chatbox.scrollHeight;
+        
+        // Send to backend with language
+        fetch('/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: message, language: language})
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Parse markdown and render as HTML
+            const htmlContent = marked.parse(data.reply);
+            chatbox.innerHTML += `<div style="text-align:left; margin:12px 0;">
+                <div style="background:#e9ecef; color:#333; padding:12px 15px; border-radius:10px; max-width:80%; word-wrap:break-word;">
+                    <div class="markdown-content">${htmlContent}</div>
+                </div>
+            </div>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
+        })
+        .catch(() => {
+            chatbox.innerHTML += `<div style="text-align:left; margin:8px 0;"><span style="background:#e9ecef; color:red; padding:8px 12px; border-radius:10px; display:inline-block;">❌ Error! Please try again.</span></div>`;
+        });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+    
+    // Language Management
+    function initLanguage() {
+        const savedLanguage = localStorage.getItem('fishDiseaseLanguage') || 'english';
+        document.getElementById('languageSelect').value = savedLanguage;
+        console.log('✅ Language initialized:', savedLanguage);
+    }
+    
+    function changeLanguage(language) {
+        localStorage.setItem('fishDiseaseLanguage', language);
+        
+        // Language names for display (only 3 languages)
+        const languageNames = {
+            'english': '🇬🇧 English',
+            'tamil': '🇮🇳 Tamil (தமிழ்)',
+            'sinhala': '🇱🇰 Sinhala (සිංහල)',
+            'hindi': '🇮🇳 Hindi (हिन्दी)'
+        };
+        
+        const displayName = languageNames[language] || language;
+        const chatbox = document.getElementById('chatbox');
+        
+        chatbox.innerHTML += `<div style="text-align:center; margin:12px 0;">
+            <span style="background:#d4edda; color:#155724; padding:8px 12px; border-radius:10px; font-size:12px; font-weight:bold;">✅ Language changed to ${displayName}</span>
+        </div>`;
+        
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+    
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        initLanguage();
+        
+        // Initialize sections - show home by default
+        const homeSection = document.getElementById('home');
+        if (homeSection) {
+            homeSection.classList.add('active');
+        }
+        
+        // Ensure other sections are hidden
+        const otherSections = ['about', 'chatbot', 'contact'];
+        otherSections.forEach(id => {
+            const section = document.getElementById(id);
+            if (section && !section.classList.contains('active')) {
+                section.style.display = 'none';
+            }
+        });
+    });
+
+    function generateReport() {
+        const disease = document.getElementById('diseaseName').textContent.replace('🐟 ', '');
+        const confidence = document.getElementById('confidenceScore').textContent.replace('Confidence: ', '').replace('%', '');
+        fetch('/generate_report', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({disease: disease, confidence: confidence})
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fish_disease_report.pdf';
+            a.click();
+        })
+        .catch(() => {
+            alert('Failed to generate report. Please try again.');
+        });
+    }
+
+
+</script>
+
+<!-- Footer Section -->
+<footer id="contact" class="section footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <!-- About Section -->
+            <div class="footer-section">
+                <h3>🐟 About Us</h3>
+                <p>Fish Disease Detection System is an AI-powered platform dedicated to helping fish farmers and aquaculture enthusiasts detect and manage fish diseases effectively.</p>
+            </div>
+            
+            <!-- Contact Section -->
+            <div class="footer-section">
+                <h3>📞 Contact Us</h3>
+                <div class="footer-contact">
+                    <span class="footer-contact-icon">📧</span>
+                    <a href="mailto:info@fishdisease.com">info@fishdisease.com</a>
+                </div>
+                <div class="footer-contact">
+                    <span class="footer-contact-icon">📱</span>
+                    <a href="tel:+94701234567">+94 70 123 4567</a>
+                </div>
+                <div class="footer-contact">
+                    <span class="footer-contact-icon">📍</span>
+                    <p>123 Aquaculture Lane, Fish Harbor, SL 80000</p>
+                </div>
+            </div>
+            
+            <!-- Quick Links Section -->
+            <div class="footer-section">
+                <h3>🔗 Quick Links</h3>
+                <p><a href="#home">Home</a></p>
+                <p><a href="#privacy">Privacy Policy</a></p>
+                <p><a href="#terms">Terms & Conditions</a></p>
+                <p><a href="#faq">FAQ</a></p>
+                <div class="social-links">
+                    <a href="https://facebook.com" target="_blank" title="Facebook">f</a>
+                    <a href="https://twitter.com" target="_blank" title="Twitter">𝕏</a>
+                    <a href="https://instagram.com" target="_blank" title="Instagram">📷</a>
+                    <a href="https://linkedin.com" target="_blank" title="LinkedIn">in</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Divider and Copyright -->
+        <div class="footer-divider">
+            <p>&copy; 2026 Fish Disease Detection System. All rights reserved. | Developed with ❤️ for Fish Farmers</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
