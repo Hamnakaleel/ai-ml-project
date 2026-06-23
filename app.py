@@ -260,7 +260,7 @@ Use markdown formatting (headers, bold, lists).
 Be concise and professional.
 If unsure, recommend consulting a professional.""",
         
-        'tamil': """நீங்கள் ஒரு மீன் நோய் நிபுணர் உதவியாளர்.
+  'tamil': """நீங்கள் ஒரு மீன் நோய் நிபுணர் உதவியாளர்.
 
 மீன் நோய்கள், சிகிச்சைகள் மற்றும் தடுப்பு முறைகள் பற்றிய கேள்விகளுக்கு பதிலளிக்கவும்.
 மார்க்டவுன் வடிவமைப்பைப் பயன்படுத்தவும் (தலைப்புகள், தடிப்பு, பட்டியல்).
